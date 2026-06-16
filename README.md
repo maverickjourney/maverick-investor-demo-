@@ -1,41 +1,36 @@
-# Maverick Journey Website
+[README.md](https://github.com/user-attachments/files/29008619/README.md)
+# Maverick Journey Investor Website
 
-A Vercel-ready React/Vite website for Maverick Journey, the AI operating system for coaching businesses.
+This is a Vite + React website built for GitHub and Vercel.
+
+## Upload to GitHub
+
+Upload the entire folder contents:
+
+- `index.html`
+- `package.json`
+- `README.md`
+- `src/`
+
+Do not upload only the `src` folder.
 
 ## Deploy to Vercel
 
-1. Upload this folder to a GitHub repository.
-2. Go to Vercel and click **Add New Project**.
-3. Import the GitHub repo.
-4. Vercel will detect Vite automatically.
+1. Go to Vercel.
+2. Add New Project.
+3. Import your GitHub repo.
+4. Framework: Vite.
 5. Build command: `npm run build`
 6. Output directory: `dist`
-7. Connect your custom domain in Vercel project settings.
+7. Deploy.
 
-## Local Development
+## Local development
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Included Pages/Sections
+## Positioning
 
-- Hero section
-- Problem statement
-- Solution pillars
-- ROI calculator
-- Pricing tiers
-- Usage monitoring model
-- Trainer client package examples
-- Competitive differentiation
-- Investor thesis
-
-## Suggested Next Additions
-
-- Real Maverick Journey logo
-- Dashboard product screenshots/mockups
-- Investor email capture form
-- Trainer beta signup form
-- Analytics tracking
-- Authenticated demo portal
+Maverick Journey is positioned as the relationship intelligence platform for coaching businesses — not just another AI fitness app.
