@@ -1,77 +1,351 @@
-import React, {useMemo, useState} from 'react';
-import { createRoot } from 'react-dom/client';
-import { Activity, AlertTriangle, ArrowRight, BarChart3, BellRing, Bot, CheckCircle2, Database, Dumbbell, Gauge, HeartPulse, LineChart, Lock, MessageSquare, ShieldCheck, Sparkles, Users, Watch, Zap } from 'lucide-react';
-import './styles.css';
+
+import React, { useMemo, useState } from "react";
+import { createRoot } from "react-dom/client";
+import {
+  Activity,
+  Brain,
+  CheckCircle2,
+  CircleDollarSign,
+  Dumbbell,
+  HeartPulse,
+  LineChart,
+  MessageSquareWarning,
+  ShieldCheck,
+  Sparkles,
+  Users,
+  Watch,
+  Zap
+} from "lucide-react";
+import "./styles.css";
 
 const tiers = [
-  {name:'Launch', clients:'Up to 5 clients', price:149, best:'Early coach', included:['Client + trainer dashboards','AI weekly client summaries','Progress photos + measurements','Basic reminders + check-ins','Messaging hub','Usage monitoring included'], caps:['AI summaries: 150/mo','Storage: 10GB','Wearables: add-on']},
-  {name:'Growth', clients:'Up to 10 clients', price:249, best:'Core target', featured:true, included:['Everything in Launch','Slack alert layer','Client risk flags','Nutrition accountability','Premium report templates','Trainer workload dashboard'], caps:['AI summaries: 400/mo','Storage: 30GB','Wearables: 5 connected clients']},
-  {name:'Pro', clients:'Up to 25 clients', price:399, best:'Full-time coach', included:['Everything in Growth','Advanced AI recommendations','Retention scoring','Wearable trend analysis','Automated client segmentation','Custom branding basics'], caps:['AI summaries: 1,250/mo','Storage: 100GB','Wearables: 25 connected clients']},
-  {name:'Elite', clients:'Up to 50 clients', price:699, best:'High-volume coach', included:['Everything in Pro','Priority AI processing','Advanced automations','Team assistant workflows','Premium analytics','Quarterly success review'], caps:['AI summaries: 3,000/mo','Storage: 250GB','Wearables: 50 connected clients']},
-  {name:'Studio', clients:'Up to 200 clients', price:1499, best:'Multi-trainer facility', included:['Multi-trainer management','Owner dashboard','White-label options','Location analytics','Role permissions','Dedicated onboarding'], caps:['Custom AI usage pool','Custom storage pool','Wearables negotiated']}
+  {
+    name: "Essential",
+    price: 149,
+    clients: "Up to 5 clients",
+    subtitle: "For early coaches proving their premium system.",
+    features: [
+      "Client + trainer dashboard",
+      "Daily check-ins",
+      "Progress photos",
+      "AI weekly summaries",
+      "Slack alert channel",
+      "Basic usage monitoring"
+    ]
+  },
+  {
+    name: "Growth",
+    price: 249,
+    clients: "Up to 10 clients",
+    subtitle: "Best starter tier for high-ticket trainers.",
+    featured: true,
+    features: [
+      "Everything in Essential",
+      "Relationship intelligence score",
+      "Client journey timeline",
+      "Retention risk alerts",
+      "Trainer action recommendations",
+      "ROI reporting"
+    ]
+  },
+  {
+    name: "Professional",
+    price: 399,
+    clients: "Up to 25 clients",
+    subtitle: "For hybrid and online coaches scaling service.",
+    features: [
+      "Everything in Growth",
+      "Wearable data integrations",
+      "Advanced compliance tracking",
+      "Nutrition behavior insights",
+      "Priority client dashboard",
+      "Usage threshold alerts"
+    ]
+  },
+  {
+    name: "Elite / Studio",
+    price: 699,
+    clients: "50+ clients or teams",
+    subtitle: "For studios, gyms, and serious coaching businesses.",
+    features: [
+      "Multi-trainer management",
+      "White-label options",
+      "Studio retention dashboard",
+      "Advanced analytics",
+      "Priority support",
+      "Custom enterprise path"
+    ]
+  }
+];
+
+const scenarios = [
+  {
+    title: "The Silent Churn",
+    icon: MessageSquareWarning,
+    before: "A client looks fine until they suddenly pause coaching.",
+    after: "Maverick Journey sees sleep decline, missed check-ins, lower engagement, and alerts the trainer before the client leaves.",
+    result: "Retention saved before revenue is lost."
+  },
+  {
+    title: "The Busy Trainer",
+    icon: Users,
+    before: "A trainer with 20 clients spends hours reviewing messages, photos, nutrition, and follow-ups.",
+    after: "AI summaries highlight who needs attention and what action to take.",
+    result: "The trainer can manage more clients without hiring an assistant."
+  },
+  {
+    title: "The Stalled Client",
+    icon: HeartPulse,
+    before: "The client is following workouts but progress slows down.",
+    after: "Wearable patterns show poor recovery, low sleep, and elevated stress.",
+    result: "The coach adjusts the strategy with context, not guessing."
+  },
+  {
+    title: "The Gym Owner",
+    icon: LineChart,
+    before: "The gym knows who paid and who cancelled, but not who is at risk.",
+    after: "The studio dashboard flags member engagement, risk, and coach opportunities.",
+    result: "More retention, more upsell opportunities, better member experience."
+  }
 ];
 
 const competitors = [
-  ['Typical coaching apps','Workouts, habits, messaging, nutrition, payments'],
-  ['Maverick Journey','AI alerts, trainer workload automation, Slack layer, wearables, usage controls, retention intelligence'],
-  ['Key wedge','Help trainers charge premium services while avoiding runaway AI/storage costs']
+  ["Workout delivery", "Yes", "Yes"],
+  ["Nutrition tracking", "Yes", "Yes"],
+  ["Progress photos", "Yes", "Yes"],
+  ["Messaging", "Yes", "Yes"],
+  ["Relationship intelligence", "Limited", "Core platform"],
+  ["Churn-risk detection", "Limited", "Built in"],
+  ["Slack alert layer", "Limited", "Built in"],
+  ["Wearable context engine", "Some", "Designed around it"],
+  ["Coach action recommendations", "Limited", "Built in"],
+  ["Usage monitoring by tier", "Limited", "Built in"]
 ];
 
-function money(n){return n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:0})}
-function App(){
-  const [clients,setClients]=useState(10); const [clientPrice,setClientPrice]=useState(750);
-  const tier = useMemo(()=> tiers.find(t=> clients <= parseInt(t.clients.match(/\d+/g)?.pop()||'999')) || tiers[4],[clients]);
-  const monthlyRevenue=clients*clientPrice; const pct=tier.price/monthlyRevenue*100; const retained=clientPrice-tier.price;
-  return <main>
-    <section className="hero">
-      <nav><div className="brand"><span className="logo">MJ</span><span>Maverick Journey</span></div><a href="#pricing" className="navcta">View pricing</a></nav>
-      <div className="heroGrid"><div>
-        <div className="eyebrow"><Sparkles size={16}/> Investor + trainer showcase website</div>
-        <h1>The AI operating system for modern coaching businesses.</h1>
-        <p className="lead">Maverick Journey helps personal trainers, hybrid coaches, and fitness studios scale premium coaching services by automating check-ins, progress tracking, wearable insights, client alerts, and weekly reporting.</p>
-        <div className="actions"><a href="#calculator" className="btn primary">Run ROI example <ArrowRight size={18}/></a><a href="#tiers" className="btn secondary">Explore tiers</a></div>
-      </div><div className="heroCard">
-        <div className="screenTop"><span></span><span></span><span></span></div>
-        <div className="alert"><BellRing/><div><b>Client Risk Alert</b><small>Sarah missed 2 check-ins and sleep dropped 18% this week.</small></div></div>
-        <div className="metricRow"><div><b>25</b><small>Active clients</small></div><div><b>8.4h</b><small>Admin saved/wk</small></div><div><b>92%</b><small>Engagement</small></div></div>
-        <div className="bars"><span style={{height:'42%'}}></span><span style={{height:'68%'}}></span><span style={{height:'76%'}}></span><span style={{height:'54%'}}></span><span style={{height:'88%'}}></span><span style={{height:'71%'}}></span></div>
-      </div></div>
-    </section>
+function ROI() {
+  const [clients, setClients] = useState(10);
+  const [charge, setCharge] = useState(750);
 
-    <section className="section problem"><div className="sectionHead"><span className="eyebrow"><AlertTriangle size={16}/> The problem</span><h2>Trainers hit a growth ceiling because premium coaching creates premium admin work.</h2><p>When a coach grows from 5 clients to 20+ clients, the work shifts from coaching to chasing updates, reviewing screenshots, remembering client context, and manually following up.</p></div>
-      <div className="cards four">{[['Texts & DMs',MessageSquare],['Nutrition review',Activity],['Wearable data',Watch],['Progress reports',BarChart3]].map(([t,I])=><div className="card" key={t}><I/><h3>{t}</h3><p>Usually scattered across disconnected apps, making it hard to deliver a consistent premium experience.</p></div>)}</div>
-    </section>
+  const plan = useMemo(() => {
+    if (clients <= 5) return { name: "Essential", price: 149 };
+    if (clients <= 10) return { name: "Growth", price: 249 };
+    if (clients <= 25) return { name: "Professional", price: 399 };
+    return { name: "Elite", price: 699 };
+  }, [clients]);
 
-    <section className="section dark"><div className="sectionHead"><span className="eyebrow"><Zap size={16}/> The solution</span><h2>One connected operating system across client, trainer, AI, and communication.</h2></div>
-      <div className="pillarGrid"><div><Users/><h3>Client Dashboard</h3><p>Workouts, nutrition, photos, habits, goals, wearable data, check-ins, reminders, and weekly reports.</p></div><div><Dumbbell/><h3>Trainer Dashboard</h3><p>AI summaries, compliance trends, at-risk clients, retention signals, workload prioritization, and progress insights.</p></div><div><MessageSquare/><h3>Slack Layer</h3><p>AI-driven alerts notify trainers when something needs human attention — missed check-ins, sleep drops, plateaus, or urgent updates.</p></div></div>
-    </section>
+  const revenue = clients * charge;
+  const percent = revenue ? ((plan.price / revenue) * 100).toFixed(1) : 0;
+  const annual = plan.price * 12;
 
-    <section className="section" id="calculator"><div className="sectionHead"><span className="eyebrow"><LineChart size={16}/> ROI calculator</span><h2>Show trainers how Maverick Journey pays for itself.</h2><p>Use this on sales calls or investor conversations to explain why a $249–$699 monthly platform fee is reasonable for high-ticket coaching.</p></div>
-      <div className="calculator"><div className="controls"><label>Active clients: <b>{clients}</b><input type="range" min="1" max="60" value={clients} onChange={e=>setClients(+e.target.value)}/></label><label>Average client package: <b>{money(clientPrice)}/mo</b><input type="range" min="200" max="1500" step="50" value={clientPrice} onChange={e=>setClientPrice(+e.target.value)}/></label></div><div className="result"><small>Recommended tier</small><h3>{tier.name} — {money(tier.price)}/mo</h3><div className="big">{money(monthlyRevenue)}/mo</div><p>Trainer gross coaching revenue</p><div className="roiGrid"><span>Platform cost: <b>{pct.toFixed(1)}%</b></span><span>Retain 1 client impact: <b>{money(retained)}</b></span></div></div></div>
-    </section>
-
-    <section className="section" id="tiers"><div className="sectionHead"><span className="eyebrow"><Gauge size={16}/> Pricing + usage controls</span><h2>Every tier feels powerful, but usage limits protect margins.</h2><p>The base tier should still feel valuable. Higher tiers unlock scale, heavier AI usage, wearable capacity, storage, advanced analytics, and white-label/studio features.</p></div>
-      <div className="pricing" id="pricing">{tiers.map(t=><div className={'priceCard '+(t.featured?'featured':'')} key={t.name}><div className="tag">{t.best}</div><h3>{t.name}</h3><p>{t.clients}</p><div className="price">{money(t.price)}<span>/mo</span></div><ul>{t.included.map(x=><li key={x}><CheckCircle2/> {x}</li>)}</ul><div className="caps"><b>Usage guardrails</b>{t.caps.map(x=><span key={x}>{x}</span>)}</div></div>)}</div>
-    </section>
-
-    <section className="section muted"><div className="sectionHead"><span className="eyebrow"><ShieldCheck size={16}/> Cost protection model</span><h2>Track heavy users without punishing normal users.</h2></div><div className="cards three">
-      <div className="card"><Bot/><h3>AI token budget</h3><p>Set monthly AI summary, chat, and report-generation caps by tier. Show usage in trainer admin so upgrades feel transparent.</p></div>
-      <div className="card"><Database/><h3>Storage budget</h3><p>Limit photo/video/document storage per plan. Offer extra storage as an add-on for high-volume transformation coaches.</p></div>
-      <div className="card"><Watch/><h3>Wearable budget</h3><p>Wearable syncs create ongoing API and data processing costs. Include limited syncs in Growth, then unlock more in Pro/Elite.</p></div>
-    </div></section>
-
-    <section className="section"><div className="sectionHead"><span className="eyebrow"><HeartPulse size={16}/> What trainers can charge clients</span><h2>Position Maverick Journey as a premium coaching enhancer.</h2></div><div className="packageGrid">
-      {[
-        ['Online Accountability','$300–$600/mo','App access, weekly check-ins, habit tracking, progress photos, AI-supported summaries.'],
-        ['Hybrid Coaching','$600–$1,200/mo','In-person sessions plus online accountability, nutrition, wearable monitoring, and weekly reports.'],
-        ['Premium Transformation','$1,000–$2,000+/mo','High-touch coaching, frequent communication, advanced data review, concierge-style accountability.']
-      ].map(([a,b,c])=><div className="package" key={a}><h3>{a}</h3><div>{b}</div><p>{c}</p></div>)}
-    </div></section>
-
-    <section className="section dark"><div className="sectionHead"><span className="eyebrow"><Lock size={16}/> Differentiation</span><h2>Not just another fitness app.</h2><p>Many platforms offer workouts, messaging, habits, and nutrition. Maverick Journey’s wedge is the business operating layer: AI prioritization, Slack alerts, retention monitoring, usage economics, and trainer capacity expansion.</p></div><div className="comparison">{competitors.map(([a,b])=><div key={a}><b>{a}</b><span>{b}</span></div>)}</div></section>
-
-    <section className="section final"><h2>Investor thesis</h2><p>Maverick Journey sits at the intersection of AI, coaching, wearables, and recurring SaaS. The platform helps coaches deliver a more personal service while reducing manual workload — creating a clear path to premium pricing, strong retention, and scalable margins.</p><a className="btn primary" href="mailto:chrisisaak@ccmediacreations.com">Contact Maverick Journey</a></section>
-  </main>
+  return (
+    <div className="roi-card">
+      <div>
+        <p className="eyebrow">Interactive ROI example</p>
+        <h3>Show investors the math in seconds.</h3>
+        <p>
+          Maverick Journey becomes easy to justify when investors see that the platform is only a small percentage of a trainer's monthly revenue.
+        </p>
+      </div>
+      <div className="sliders">
+        <label>
+          Clients managed: <strong>{clients}</strong>
+          <input type="range" min="3" max="60" value={clients} onChange={(e) => setClients(Number(e.target.value))} />
+        </label>
+        <label>
+          Monthly coaching price per client: <strong>${charge}</strong>
+          <input type="range" min="250" max="2000" step="50" value={charge} onChange={(e) => setCharge(Number(e.target.value))} />
+        </label>
+      </div>
+      <div className="roi-metrics">
+        <div><span>Trainer revenue</span><strong>${revenue.toLocaleString()}/mo</strong></div>
+        <div><span>Suggested plan</span><strong>{plan.name}</strong></div>
+        <div><span>Maverick price</span><strong>${plan.price}/mo</strong></div>
+        <div><span>Cost of revenue</span><strong>{percent}%</strong></div>
+        <div><span>Annual SaaS revenue</span><strong>${annual.toLocaleString()}</strong></div>
+      </div>
+    </div>
+  );
 }
 
-createRoot(document.getElementById('root')).render(<App/>);
+function App() {
+  return (
+    <main>
+      <section className="hero">
+        <nav>
+          <div className="brand"><span>MJ</span>Maverick Journey</div>
+          <div className="navlinks">
+            <a href="#problem">Problem</a>
+            <a href="#solution">Solution</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#investors">Investors</a>
+          </div>
+        </nav>
+
+        <div className="hero-grid">
+          <div>
+            <p className="eyebrow">Investor preview</p>
+            <h1>The relationship intelligence platform for coaching businesses.</h1>
+            <p className="hero-copy">
+              Maverick Journey is not another AI fitness app. It brings trainers and clients closer together by helping coaches understand the full client journey — workouts, nutrition, wearables, check-ins, motivation, stress, and engagement — before clients disengage.
+            </p>
+            <div className="hero-buttons">
+              <a href="#investors" className="primary">View investor case</a>
+              <a href="#scenarios" className="secondary">See scenarios</a>
+            </div>
+            <div className="proof-row">
+              <div><strong>$249/mo</strong><span>Target growth tier</span></div>
+              <div><strong>3.3%</strong><span>Of $7.5k trainer revenue</span></div>
+              <div><strong>$2.99M</strong><span>ARR at 1,000 trainers</span></div>
+            </div>
+          </div>
+
+          <div className="dashboard-card">
+            <div className="dashboard-header">
+              <span>Trainer Intelligence Feed</span>
+              <Sparkles size={18} />
+            </div>
+            <div className="alert danger">
+              <strong>Sarah M. — Churn risk rising</strong>
+              <p>Sleep down 22%, missed 2 check-ins, sentiment shifted negative. Recommended: personal outreach today.</p>
+            </div>
+            <div className="alert warning">
+              <strong>David R. — Progress stalled</strong>
+              <p>Workouts completed, but recovery indicators are low. Recommend recovery adjustment.</p>
+            </div>
+            <div className="alert success">
+              <strong>Amanda L. — On track</strong>
+              <p>Nutrition compliance improved 18%. Send encouragement to reinforce momentum.</p>
+            </div>
+            <div className="mini-chart">
+              <div style={{height: "34%"}}></div>
+              <div style={{height: "48%"}}></div>
+              <div style={{height: "62%"}}></div>
+              <div style={{height: "44%"}}></div>
+              <div style={{height: "78%"}}></div>
+              <div style={{height: "88%"}}></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="problem" className="section">
+        <p className="eyebrow">The problem</p>
+        <h2>Coaching does not have a workout problem. It has a relationship problem.</h2>
+        <p className="section-lead">
+          Trainers already have workout builders, messaging apps, nutrition tools, spreadsheets, and wearable dashboards. The missing layer is understanding what is happening with the human behind the data.
+        </p>
+        <div className="cards three">
+          <div><Dumbbell /><h3>Data is scattered</h3><p>Workouts, nutrition, photos, messages, and wearables live in separate tools.</p></div>
+          <div><Activity /><h3>Coaches are reactive</h3><p>Most trainers only see the problem after a client misses workouts or cancels.</p></div>
+          <div><CircleDollarSign /><h3>Churn hurts revenue</h3><p>Losing one high-ticket client can cost more than an entire year of software.</p></div>
+        </div>
+      </section>
+
+      <section id="solution" className="section dark-panel">
+        <p className="eyebrow">The missing layer</p>
+        <h2>Maverick Journey turns client data into coach-ready understanding.</h2>
+        <div className="flow">
+          <div>Wearables<br/>Nutrition<br/>Workouts<br/>Check-ins<br/>Photos<br/>Messages</div>
+          <div className="arrow">→</div>
+          <div className="core"><Brain />Relationship Intelligence Engine</div>
+          <div className="arrow">→</div>
+          <div>Coach Actions<br/>Client Retention<br/>Better Outcomes<br/>Higher Revenue</div>
+        </div>
+      </section>
+
+      <section id="scenarios" className="section">
+        <p className="eyebrow">Real-world use cases</p>
+        <h2>What investors should understand immediately.</h2>
+        <div className="cards two">
+          {scenarios.map((s) => {
+            const Icon = s.icon;
+            return (
+              <div className="scenario" key={s.title}>
+                <Icon />
+                <h3>{s.title}</h3>
+                <p><strong>Without Maverick:</strong> {s.before}</p>
+                <p><strong>With Maverick:</strong> {s.after}</p>
+                <div className="result">{s.result}</div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="section split">
+        <div>
+          <p className="eyebrow">Why we beat competitors</p>
+          <h2>Competitors manage programs. Maverick Journey manages the relationship.</h2>
+          <p>
+            The nearest competitors are platforms like Trainerize, Everfit, TrueCoach, and Coach Catalyst. They support workouts, nutrition, messaging, and progress tracking. Maverick Journey adds the intelligence layer that helps coaches know who needs help, why they need help, and what to do next.
+          </p>
+        </div>
+        <div className="comparison">
+          <div className="comp-row head"><span>Capability</span><span>Traditional platforms</span><span>Maverick Journey</span></div>
+          {competitors.map((row) => (
+            <div className="comp-row" key={row[0]}>
+              <span>{row[0]}</span><span>{row[1]}</span><span>{row[2]}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="pricing" className="section">
+        <p className="eyebrow">Pricing strategy</p>
+        <h2>Base platform with usage-aware tiers.</h2>
+        <p className="section-lead">
+          The basic tier should feel powerful enough to sell, while premium tiers unlock higher-cost and higher-value capabilities such as wearable integrations, advanced AI analysis, white-labeling, and studio reporting.
+        </p>
+        <div className="pricing-grid">
+          {tiers.map((tier) => (
+            <div className={`price-card ${tier.featured ? "featured" : ""}`} key={tier.name}>
+              {tier.featured && <div className="badge">Recommended launch tier</div>}
+              <h3>{tier.name}</h3>
+              <p>{tier.subtitle}</p>
+              <div className="price">${tier.price}<span>/mo</span></div>
+              <div className="clients">{tier.clients}</div>
+              <ul>
+                {tier.features.map((f) => <li key={f}><CheckCircle2 size={16}/>{f}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="section dark-panel">
+        <p className="eyebrow">Usage controls</p>
+        <h2>Designed to protect margins as trainer usage grows.</h2>
+        <div className="cards three">
+          <div><Zap /><h3>AI token monitoring</h3><p>Track summaries, chat usage, client reports, and high-cost AI calls by trainer and tier.</p></div>
+          <div><Watch /><h3>Integration controls</h3><p>Wearables, Terra, ROOK, Apple Health-style syncs can be tiered or metered when usage becomes expensive.</p></div>
+          <div><ShieldCheck /><h3>Storage limits</h3><p>Progress photos, videos, uploads, and exports can have plan-based limits and upgrade triggers.</p></div>
+        </div>
+      </section>
+
+      <section className="section">
+        <ROI />
+      </section>
+
+      <section id="investors" className="section investor">
+        <p className="eyebrow">Investor thesis</p>
+        <h2>AI alone is not the moat. Relationship intelligence is.</h2>
+        <p>
+          AI fitness products are becoming common. Maverick Journey is different because it does not simply generate workouts or summaries. It builds a continuous understanding of the client journey and translates that understanding into timely trainer action.
+        </p>
+        <div className="metrics">
+          <div><strong>$298K</strong><span>ARR at 100 trainers on Growth</span></div>
+          <div><strong>$1.49M</strong><span>ARR at 500 trainers</span></div>
+          <div><strong>$2.99M</strong><span>ARR at 1,000 trainers</span></div>
+          <div><strong>$14.9M</strong><span>ARR at 5,000 trainers</span></div>
+        </div>
+      </section>
+
+      <footer>
+        <div className="brand"><span>MJ</span>Maverick Journey</div>
+        <p>The future of coaching is not more data. It is better understanding.</p>
+      </footer>
+    </main>
+  );
+}
+
+createRoot(document.getElementById("root")).render(<App />);
